@@ -1,6 +1,6 @@
 package com.mt.brightauthorization.filter;
 
-import com.mt.brightauthorization.service.JwtTokenProvider;
+import com.mt.brightauthorization.util.JwtTokenUtil;
 import com.mt.brightauthorization.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,7 +25,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
     private UserService userService;
 
-    private JwtTokenProvider jwtTokenProvider;
+    private JwtTokenUtil jwtTokenUtil;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -34,18 +34,18 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String bearerToken = request.getHeader("Authorization");
         if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             jwtToken = bearerToken.substring(7);
-            subject = jwtTokenProvider.getSubject(jwtToken);
-        }
+            subject = jwtTokenUtil.getSubject(jwtToken);
 
-        if(subject != null && SecurityContextHolder.getContext().getAuthentication() == null){
-            UserDetails userDetails = userService.loadUserByUsername(subject);
+            if(subject != null && SecurityContextHolder.getContext().getAuthentication() == null){
+                UserDetails userDetails = userService.loadUserByUsername(subject);
 
-            if (Objects.nonNull(userDetails)){
-                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
-                usernamePasswordAuthenticationToken
-                        .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+                if (Objects.nonNull(userDetails)){
+                    UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+                    usernamePasswordAuthenticationToken
+                            .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+                }
             }
         }
 
@@ -58,8 +58,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     }
 
     @Autowired
-    public void setJwtTokenProvider(JwtTokenProvider jwtTokenProvider) {
-        this.jwtTokenProvider = jwtTokenProvider;
+    public void setJwtTokenUtil(JwtTokenUtil jwtTokenUtil) {
+        this.jwtTokenUtil = jwtTokenUtil;
     }
 
 }
