@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
-public class UserDataDTO {
+public class UserRequestDTO {
 
     private long id;
 

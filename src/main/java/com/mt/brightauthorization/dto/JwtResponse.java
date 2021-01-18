@@ -6,13 +6,13 @@ public class JwtResponse implements Serializable {
 
     private static final long serialVersionUID = 540L;
 
-    private String jwtToken;
+    private String jwtAccessToken;
 
     public JwtResponse(String jwtToken) {
-        this.jwtToken = jwtToken;
+        this.jwtAccessToken = jwtToken;
     }
 
     public String getJwtToken() {
-        return jwtToken;
+        return jwtAccessToken;
     }
 }

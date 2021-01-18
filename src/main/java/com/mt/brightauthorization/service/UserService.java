@@ -1,7 +1,7 @@
 package com.mt.brightauthorization.service;
 
 
-import com.mt.brightauthorization.dto.UserDataDTO;
+import com.mt.brightauthorization.dto.UserRequestDTO;
 import com.mt.brightauthorization.entity.Users;
 import com.mt.brightauthorization.repoitory.RoleRepository;
 import com.mt.brightauthorization.repoitory.UserRepository;
@@ -30,20 +30,20 @@ public class UserService implements UserDetailsService {
 
     private PasswordEncoder passwordEncoder;
 
-    public Users save(UserDataDTO userDataDTO){
+    public Users save(UserRequestDTO userRequestDTO){
 
-        if(Objects.isNull(userDataDTO) || Objects.isNull(userDataDTO.getPhone())){
+        if(Objects.isNull(userRequestDTO) || Objects.isNull(userRequestDTO.getPhone())){
             throw new IllegalArgumentException();
         }
 
-        Users user = userRepository.findByPhone(userDataDTO.getPhone());
+        Users user = userRepository.findByPhone(userRequestDTO.getPhone());
 
         if(Objects.nonNull(user)){
-            throw new RuntimeException("User by phone:" + userDataDTO.getPhone() + "is exist");
+            throw new RuntimeException("User by phone:" + userRequestDTO.getPhone() + "is exist");
         }
 
-        user = modelMapper.map(userDataDTO, Users.class);
-        user.setPassword(passwordEncoder.encode(userDataDTO.getPassword()));
+        user = modelMapper.map(userRequestDTO, Users.class);
+        user.setPassword(passwordEncoder.encode(userRequestDTO.getPassword()));
         user.setRoles(Arrays.asList(roleRepository.findByName("ROLE_USER")));
         userRepository.save(user);
 
@@ -51,12 +51,36 @@ public class UserService implements UserDetailsService {
     }
 
 
-    @Override
+    public Users update(UserRequestDTO updateProfile){
+        return userRepository.findById(updateProfile.getId())
+                .map(profile -> {
+                    profile.setAge(updateProfile.getAge());
+                    profile.setSurname(updateProfile.getSurname());
+                    profile.setUsername(updateProfile.getUsername());
+                    return userRepository.save(profile);
+                })
+                .orElseGet(() ->
+                        userRepository.save(modelMapper.map(updateProfile, Users.class))
+                );
+    }
+
+    public void delete(Long id){
+        userRepository.deleteById(id);
+    }
+
+    public Users getById(Long id){
+        return userRepository.findById(id).orElse(null);
+    }
+
+    public Users findByPhone(String phone) throws UsernameNotFoundException {
+        return userRepository.findByPhone(phone);
+    }
+
     public UserDetails loadUserByUsername(String phone) throws UsernameNotFoundException {
         Users users = userRepository.findByPhone(phone);
 
         if(Objects.isNull(users)){
-            throw new UsernameNotFoundException("User not found by phone: " + phone);
+            throw new UsernameNotFoundException("User by phone: " + phone + "was not found in the database");
         }
 
         List<SimpleGrantedAuthority> authorities = Arrays.asList(new SimpleGrantedAuthority("user"));

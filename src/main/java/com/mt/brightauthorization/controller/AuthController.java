@@ -1,32 +1,26 @@
 package com.mt.brightauthorization.controller;
 
-import com.mt.brightauthorization.dto.UserDataDTO;
+import com.mt.brightauthorization.dto.JwtDataResponse;
+import com.mt.brightauthorization.dto.JwtResponse;
+import com.mt.brightauthorization.dto.UserRequestDTO;
 import com.mt.brightauthorization.service.token.TokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
-@Controller
+@RestController()
 public class AuthController {
 
     private TokenProvider tokenProvider;
 
     @PostMapping("/authenticate")
-    public ResponseEntity<?> createAuthenticationToken (@RequestBody UserDataDTO user){
-        return ResponseEntity.ok(tokenProvider.generateToken(user.getPhone()));
+    public ResponseEntity<?> createAuthenticationToken (@RequestBody UserRequestDTO user) throws Exception {
+        return ResponseEntity.ok(tokenProvider.generateToken(user));
     }
 
-    @PostMapping("/registration")
-    public ResponseEntity<?> registration (@RequestBody UserDataDTO user){
-        return null;
-    }
-
-    @PostMapping("/login")
-    public ResponseEntity<?> login (@RequestBody UserDataDTO user){
-
-        return null;
+    @GetMapping("/validate/{jwt}")
+    public JwtDataResponse validateToken (@PathVariable("jwt") String jwtAccessToken) {
+        return tokenProvider.validateToken(jwtAccessToken);
     }
 
     @Autowired
